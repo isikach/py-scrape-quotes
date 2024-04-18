@@ -9,13 +9,16 @@ from bs4 import BeautifulSoup
 
 BASE_URL = "https://quotes.toscrape.com/page/"
 
+
 @dataclass
 class Quote:
     text: str
     author: str
     tags: list[str]
 
+
 all_quotes = []
+
 
 def parse_single_quote(soup: BeautifulSoup) -> Quote:
     return Quote(
@@ -24,15 +27,6 @@ def parse_single_quote(soup: BeautifulSoup) -> Quote:
         tags=[tag.text.strip() for tag in soup.select(".tags > a.tag")],
     )
 
-# def pages_counter() -> int:
-#     page_counter = 1
-#     next_page = True
-#     while next_page:
-#         page = requests.get(BASE_URL + f"{page_counter}/").content
-#         soup = BeautifulSoup(page, "html.parser")
-#         next_page = soup.select_one(".next")
-#         page_counter += 1
-#     return page_counter
 
 async def pages_counter() -> int:
     page_counter = 1
@@ -47,6 +41,7 @@ async def pages_counter() -> int:
                 page_counter += 1
     return page_counter
 
+
 async def get_page_data(session, page):
     url = BASE_URL + f"{page}/"
     async with session.get(url, ssl=False) as response:
@@ -56,6 +51,7 @@ async def get_page_data(session, page):
         for q in quotes:
             all_quotes.append(parse_single_quote(q))
         print(f"INFO: page {page} finished")
+
 
 async def gather_data():
     async with aiohttp.ClientSession() as session:
