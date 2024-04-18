@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 import asyncio
 import aiohttp
-import requests
 from bs4 import BeautifulSoup
 
 
@@ -42,18 +41,18 @@ async def pages_counter() -> int:
     return page_counter
 
 
-async def get_page_data(session, page):
+async def get_page_data(session: aiohttp.ClientSession, page: int) -> None:
     url = BASE_URL + f"{page}/"
     async with session.get(url, ssl=False) as response:
         response = await response.content.read()
         soup = BeautifulSoup(response, "html.parser")
         quotes = soup.select(".quote")
-        for q in quotes:
-            all_quotes.append(parse_single_quote(q))
+        for quote in quotes:
+            all_quotes.append(parse_single_quote(quote))
         print(f"INFO: page {page} finished")
 
 
-async def gather_data():
+async def gather_data() -> None:
     async with aiohttp.ClientSession() as session:
         tasks = []
         last_page_number = await pages_counter()
@@ -62,13 +61,13 @@ async def gather_data():
         await asyncio.gather(*tasks)
 
 
-async def main(output_csv_path: str):
+async def main(output_csv_path: str) -> None:
     await gather_data()
-    with open(output_csv_path, mode='w', newline='', encoding='utf-8') as file:
+    with open(output_csv_path, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["Text", "Author", "Tags"])
         for quote in all_quotes:
-            writer.writerow([quote.text, quote.author, ', '.join(quote.tags)])
+            writer.writerow([quote.text, quote.author, ", ".join(quote.tags)])
 
 
 if __name__ == "__main__":
